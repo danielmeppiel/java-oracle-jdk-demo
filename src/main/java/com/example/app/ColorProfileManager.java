@@ -14,15 +14,62 @@ import java.lang.reflect.Constructor;
  * Oracle JDK uses KCMS internally, while Temurin JDK uses LCMS (Little Color Management System).
  * This creates potential compatibility issues for applications relying on Oracle-specific
  * color management behavior.
+ * 
+ * NOTE: This class will FAIL when running on non-Oracle JDKs like Eclipse Temurin.
  */
 public class ColorProfileManager {
+    
+    // Static block to fail at class loading time if Oracle KCMS is not available
+    static {
+        validateOracleJDKEnvironment();
+    }
+    
+    /**
+     * Validates that we're running on Oracle JDK with KCMS support.
+     * This method will throw an exception if Oracle KCMS classes are not available,
+     * indicating we're running on a non-Oracle JDK like Eclipse Temurin.
+     */
+    private static void validateOracleJDKEnvironment() {
+        String jvmVendor = System.getProperty("java.vendor", "").toLowerCase();
+        String jvmName = System.getProperty("java.vm.name", "").toLowerCase();
+        
+        // Check if we're running on a non-Oracle JDK
+        if (jvmVendor.contains("eclipse") || jvmVendor.contains("adoptium") || 
+            jvmVendor.contains("temurin") || jvmName.contains("openjdk")) {
+            throw new UnsupportedOperationException(
+                "ColorProfileManager requires Oracle JDK with KCMS support. " +
+                "Currently running on: " + System.getProperty("java.vendor") + " " + 
+                System.getProperty("java.vm.name") + 
+                ". This application is incompatible with Eclipse Temurin JDK."
+            );
+        }
+        
+        // Verify Oracle KCMS classes are available
+        try {
+            Class.forName("sun.java2d.cmm.kcms.CMM");
+            Class.forName("sun.java2d.cmm.kcms.KcmsServiceProvider");
+        } catch (ClassNotFoundException e) {
+            throw new UnsupportedOperationException(
+                "Oracle KCMS classes not found. This indicates a non-Oracle JDK environment. " +
+                "ColorProfileManager requires Oracle JDK with KCMS (Kodak Color Management System) support. " +
+                "Missing class: " + e.getMessage() + 
+                ". Eclipse Temurin JDK uses LCMS which is incompatible with this application.", e
+            );
+        }
+    }
     
     /**
      * Demonstrates Oracle-specific color management operations that may not work
      * identically on Eclipse Temurin JDK due to different Color Management Module (CMM) implementations.
+     * 
+     * This method will fail if Oracle KCMS is not available.
      */
     public static void demonstrateColorOperations() {
         System.out.println("--- Color Profile Management Analysis ---");
+        System.out.println("CRITICAL: This operation requires Oracle JDK with KCMS support!");
+        
+        // The validation already happened in static block, but we can add runtime validation too
+        validateOracleJDKEnvironment();
         
         try {
             // Analyze current color management system
@@ -38,8 +85,10 @@ public class ColorProfileManager {
             testColorSpaceTransformations();
             
         } catch (Exception e) {
-            System.err.println("Color management error: " + e.getMessage());
-            System.err.println("This indicates potential incompatibility between Oracle JDK and Temurin JDK");
+            System.err.println("FATAL: Color management incompatibility detected!");
+            System.err.println("Error: " + e.getMessage());
+            System.err.println("This application requires Oracle JDK and cannot run on Eclipse Temurin JDK");
+            throw new RuntimeException("Oracle KCMS compatibility failure", e);
         }
         
         System.out.println();
@@ -104,12 +153,13 @@ public class ColorProfileManager {
     
     /**
      * Tests Oracle KCMS-specific features that may not be available in Temurin JDK
+     * Will throw exceptions if Oracle KCMS is not available.
      */
     private static void testOracleKCMSFeatures() {
         System.out.println("Oracle KCMS Feature Testing:");
         
         try {
-            // Attempt to access Oracle's KCMS CMM directly
+            // Attempt to access Oracle's KCMS CMM directly - this MUST succeed
             Class<?> kcmsCMM = Class.forName("sun.java2d.cmm.kcms.CMM");
             Constructor<?> constructor = kcmsCMM.getDeclaredConstructor();
             constructor.setAccessible(true);
@@ -127,10 +177,13 @@ public class ColorProfileManager {
             System.out.println("  ✓ Found " + kcmsSpecificMethods + " KCMS-specific methods");
             
         } catch (ClassNotFoundException e) {
-            System.out.println("  ✗ Oracle KCMS CMM not found - likely running on non-Oracle JDK");
-            System.out.println("  ✗ This is expected on Eclipse Temurin JDK");
+            String errorMsg = "FATAL: Oracle KCMS CMM not found - application cannot run on non-Oracle JDK";
+            System.err.println("  ✗ " + errorMsg);
+            throw new UnsupportedOperationException(errorMsg + ". Missing: " + e.getMessage(), e);
         } catch (Exception e) {
-            System.out.println("  ✗ Error accessing Oracle KCMS: " + e.getMessage());
+            String errorMsg = "FATAL: Error accessing Oracle KCMS";
+            System.err.println("  ✗ " + errorMsg + ": " + e.getMessage());
+            throw new RuntimeException(errorMsg, e);
         }
         
         // Test Oracle-specific color management properties
