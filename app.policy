@@ -1,0 +1,60 @@
+# Security Policy File for Migration Demo
+# This demonstrates security policies that might need adjustment
+# when migrating from Oracle JDK to Eclipse Temurin
+
+# Grant all permissions to the application code
+grant codeBase "file:${user.dir}/-" {
+    permission java.security.AllPermission;
+};
+
+# File system permissions
+grant {
+    permission java.io.FilePermission "${user.dir}/-", "read,write,delete";
+    permission java.io.FilePermission "${java.io.tmpdir}/-", "read,write,delete";
+    permission java.io.FilePermission "${user.home}/.java/-", "read,write";
+};
+
+# Network permissions
+grant {
+    permission java.net.SocketPermission "*:80", "connect,resolve";
+    permission java.net.SocketPermission "*:443", "connect,resolve";
+    permission java.net.SocketPermission "localhost:*", "connect,resolve,listen";
+};
+
+# Management permissions for JVM monitoring
+grant {
+    permission javax.management.MBeanServerPermission "*";
+    permission javax.management.MBeanPermission "*", "registerMBean,unregisterMBean";
+    permission javax.management.MBeanPermission "*", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "*", "invoke";
+    permission javax.management.MBeanTrustPermission "register";
+};
+
+# Runtime permissions
+grant {
+    permission java.lang.RuntimePermission "accessDeclaredMembers";
+    permission java.lang.RuntimePermission "getStackTrace";
+    permission java.lang.RuntimePermission "setContextClassLoader";
+    permission java.lang.RuntimePermission "getClassLoader";
+    permission java.lang.RuntimePermission "createClassLoader";
+    permission java.lang.RuntimePermission "accessClassInPackage.sun.*";
+    permission java.lang.RuntimePermission "accessClassInPackage.com.sun.*";
+};
+
+# Security permissions for cryptographic operations
+grant {
+    permission java.security.SecurityPermission "insertProvider";
+    permission java.security.SecurityPermission "removeProvider";
+    permission java.security.SecurityPermission "putProviderProperty.*";
+    permission java.security.SecurityPermission "getProperty.*";
+};
+
+# Reflection permissions
+grant {
+    permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+};
+
+# System property permissions
+grant {
+    permission java.util.PropertyPermission "*", "read,write";
+};

@@ -1,0 +1,44 @@
+# JVM Configuration for Oracle JDK to Eclipse Temurin Migration Demo
+#
+# This file contains JVM options that demonstrate potential differences
+# between Oracle JDK and Eclipse Temurin JDK.
+
+# Memory Management Options
+-Xms256m
+-Xmx1g
+-XX:NewRatio=3
+-XX:SurvivorRatio=8
+
+# Garbage Collection Options (may differ between JDK distributions)
+-XX:+UseG1GC
+-XX:MaxGCPauseMillis=200
+-XX:G1HeapRegionSize=16m
+
+# JIT Compilation Options
+-XX:CompileThreshold=10000
+-XX:+UseCompressedOops
+
+# Monitoring and Debugging Options
+-XX:+FlightRecorder
+-XX:StartFlightRecording=duration=60s,filename=app-startup.jfr
+-XX:+UnlockDiagnosticVMOptions
+-XX:+LogVMOutput
+
+# Security Options
+-Djava.security.policy=app.policy
+-Djava.security.debug=access
+
+# Oracle-specific options that might not be available in Eclipse Temurin
+# (These should be tested and potentially removed during migration)
+-XX:+UseStringDeduplication
+-XX:+UseContainerSupport
+
+# System Properties
+-Dfile.encoding=UTF-8
+-Djava.awt.headless=true
+-Djava.net.useSystemProxies=true
+
+# Application-specific properties
+-Dapp.name=oracle-jdk-migration-demo
+-Dapp.version=1.0.0
+-Dapp.environment=development
