@@ -60,6 +60,9 @@ public class HelloWorldApp {
             demonstrateJFRRecording();
             demonstratePerformanceMonitoring();
             
+            // Oracle HotSpot-specific monitoring (will fail on Temurin)
+            HotSpotMonitor.demonstrateHotSpotMonitoring();
+            
             System.out.println("=== Migration Demo Complete ===");
             System.out.println("This demo shows various Oracle JDK features that should be");
             System.out.println("verified when migrating to Eclipse Temurin JDK.");
