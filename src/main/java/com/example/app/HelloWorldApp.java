@@ -62,6 +62,8 @@ public class HelloWorldApp {
             
             // Oracle HotSpot-specific monitoring (will fail on Temurin)
             HotSpotMonitor.demonstrateHotSpotMonitoring();
+            // Oracle Font Renderer demonstration (incompatible with Temurin JDK)
+            FontRenderer.demonstrateFontOperations();
             
             System.out.println("=== Migration Demo Complete ===");
             System.out.println("This demo shows various Oracle JDK features that should be");
