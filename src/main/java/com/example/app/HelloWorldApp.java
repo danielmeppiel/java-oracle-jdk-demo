@@ -60,6 +60,8 @@ public class HelloWorldApp {
             demonstrateJFRRecording();
             demonstratePerformanceMonitoring();
             
+            // Oracle JDK specific memory operations
+            MemoryOptimizer.demonstrateDirectMemoryOperations();
             // Oracle HotSpot-specific monitoring (will fail on Temurin)
             HotSpotMonitor.demonstrateHotSpotMonitoring();
             // Oracle Font Renderer demonstration (incompatible with Temurin JDK)
