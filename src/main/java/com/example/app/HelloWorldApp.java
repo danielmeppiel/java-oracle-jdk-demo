@@ -55,6 +55,9 @@ public class HelloWorldApp {
             JVMMonitor.analyzeThreadManagement();
             JVMMonitor.checkOracleSpecificFeatures();
             
+            // Color management analysis
+            ColorProfileManager.demonstrateColorOperations();
+            
             // Performance demonstrations
             demonstrateMemoryManagement();
             demonstrateJFRRecording();
