@@ -15,61 +15,24 @@ import java.lang.reflect.Constructor;
  * This creates potential compatibility issues for applications relying on Oracle-specific
  * color management behavior.
  * 
- * NOTE: This class will FAIL when running on non-Oracle JDKs like Eclipse Temurin.
+ * NOTE: This class will FAIL with ClassNotFoundException when running on non-Oracle JDKs
+ * like Eclipse Temurin when it attempts to access Oracle-specific KCMS classes.
  */
 public class ColorProfileManager {
     
-    // Static block to fail at class loading time if Oracle KCMS is not available
-    static {
-        validateOracleJDKEnvironment();
-    }
+
     
-    /**
-     * Validates that we're running on Oracle JDK with KCMS support.
-     * This method will throw an exception if Oracle KCMS classes are not available,
-     * indicating we're running on a non-Oracle JDK like Eclipse Temurin.
-     */
-    private static void validateOracleJDKEnvironment() {
-        String jvmVendor = System.getProperty("java.vendor", "").toLowerCase();
-        String jvmName = System.getProperty("java.vm.name", "").toLowerCase();
-        
-        // Check if we're running on a non-Oracle JDK
-        if (jvmVendor.contains("eclipse") || jvmVendor.contains("adoptium") || 
-            jvmVendor.contains("temurin") || jvmName.contains("openjdk")) {
-            throw new UnsupportedOperationException(
-                "ColorProfileManager requires Oracle JDK with KCMS support. " +
-                "Currently running on: " + System.getProperty("java.vendor") + " " + 
-                System.getProperty("java.vm.name") + 
-                ". This application is incompatible with Eclipse Temurin JDK."
-            );
-        }
-        
-        // Verify Oracle KCMS classes are available
-        try {
-            Class.forName("sun.java2d.cmm.kcms.CMM");
-            Class.forName("sun.java2d.cmm.kcms.KcmsServiceProvider");
-        } catch (ClassNotFoundException e) {
-            throw new UnsupportedOperationException(
-                "Oracle KCMS classes not found. This indicates a non-Oracle JDK environment. " +
-                "ColorProfileManager requires Oracle JDK with KCMS (Kodak Color Management System) support. " +
-                "Missing class: " + e.getMessage() + 
-                ". Eclipse Temurin JDK uses LCMS which is incompatible with this application.", e
-            );
-        }
-    }
+
     
     /**
      * Demonstrates Oracle-specific color management operations that may not work
      * identically on Eclipse Temurin JDK due to different Color Management Module (CMM) implementations.
      * 
-     * This method will fail if Oracle KCMS is not available.
+     * This method will fail with ClassNotFoundException if Oracle KCMS classes are not available.
      */
     public static void demonstrateColorOperations() {
         System.out.println("--- Color Profile Management Analysis ---");
-        System.out.println("CRITICAL: This operation requires Oracle JDK with KCMS support!");
-        
-        // The validation already happened in static block, but we can add runtime validation too
-        validateOracleJDKEnvironment();
+        System.out.println("Attempting to use Oracle KCMS APIs...");
         
         try {
             // Analyze current color management system
@@ -153,9 +116,9 @@ public class ColorProfileManager {
     
     /**
      * Tests Oracle KCMS-specific features that may not be available in Temurin JDK
-     * Will throw exceptions if Oracle KCMS is not available.
+     * Will throw ClassNotFoundException if Oracle KCMS classes are not available.
      */
-    private static void testOracleKCMSFeatures() {
+    private static void testOracleKCMSFeatures() throws ClassNotFoundException {
         System.out.println("Oracle KCMS Feature Testing:");
         
         try {
@@ -177,9 +140,10 @@ public class ColorProfileManager {
             System.out.println("  ✓ Found " + kcmsSpecificMethods + " KCMS-specific methods");
             
         } catch (ClassNotFoundException e) {
-            String errorMsg = "FATAL: Oracle KCMS CMM not found - application cannot run on non-Oracle JDK";
+            String errorMsg = "Oracle KCMS CMM not found - likely running on non-Oracle JDK";
             System.err.println("  ✗ " + errorMsg);
-            throw new UnsupportedOperationException(errorMsg + ". Missing: " + e.getMessage(), e);
+            System.err.println("  ✗ This is expected on Eclipse Temurin JDK");
+            throw e; // Re-throw to propagate the natural ClassNotFoundException
         } catch (Exception e) {
             String errorMsg = "FATAL: Error accessing Oracle KCMS";
             System.err.println("  ✗ " + errorMsg + ": " + e.getMessage());
